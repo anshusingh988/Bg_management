@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Reports - BG Management{% endblock %}
+{% block page_title %}Reports & Exports{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <!-- BG Report -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header"><h6><i class="fas fa-file-excel me-2" style="color:#27AE60;"></i>BG Report Export</h6></div>
+            <div class="card-body">
+                <p style="color:#6B7A8D;font-size:13px;margin-bottom:20px;">
+                    Export all BG requests to an Excel file with filters by date, status, and more.
+                    Includes all 18 fields with color-coded status.
+                </p>
+                <form action="{{ url_for('reports.bg_export') }}" method="GET">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">From Date</label>
+                            <input type="date" name="start_date" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">To Date</label>
+                            <input type="date" name="end_date" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Status Filter</label>
+                            <select name="status" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option>Pending</option>
+                                <option>Under Review</option>
+                                <option>Approved</option>
+                                <option>Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" style="width:100%;background:#27AE60;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">
+                        <i class="fas fa-download me-2"></i> Download BG Report (.xlsx)
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Report -->
+    {% if current_user.role == 'Admin' %}
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header"><h6><i class="fas fa-history me-2" style="color:#1E3A5F;"></i>Audit Trail Report</h6></div>
+            <div class="card-body">
+                <p style="color:#6B7A8D;font-size:13px;margin-bottom:20px;">
+                    Download the complete audit trail showing all user actions, timestamps, and system events for compliance.
+                </p>
+                <div style="background:#EBF2FF;border-radius:8px;padding:16px;margin-bottom:20px;">
+                    <div style="font-size:12px;color:#1E40AF;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Compliance Report</strong> — Includes last 500 actions with user, action type, IP address, and timestamp.
+                    </div>
+                </div>
+                <a href="{{ url_for('reports.audit_export') }}" 
+                   style="display:block;width:100%;background:#1E3A5F;color:#fff;text-align:center;padding:12px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;">
+                    <i class="fas fa-download me-2"></i> Download Audit Log (.xlsx)
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Stats -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h6><i class="fas fa-chart-bar me-2" style="color:#E8A020;"></i>Quick Export Links</h6></div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-3 col-6">
+                        <a href="{{ url_for('reports.bg_export', status='Pending') }}"
+                           style="display:block;padding:14px;background:#FFF3CD;border-radius:10px;text-align:center;text-decoration:none;">
+                            <i class="fas fa-clock" style="font-size:24px;color:#E8A020;display:block;margin-bottom:6px;"></i>
+                            <div style="font-size:13px;font-weight:700;color:#856404;">Pending Requests</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{{ url_for('reports.bg_export', status='Approved') }}"
+                           style="display:block;padding:14px;background:#D1FAE5;border-radius:10px;text-align:center;text-decoration:none;">
+                            <i class="fas fa-check-circle" style="font-size:24px;color:#27AE60;display:block;margin-bottom:6px;"></i>
+                            <div style="font-size:13px;font-weight:700;color:#065F46;">Approved Requests</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{{ url_for('reports.bg_export', status='Rejected') }}"
+                           style="display:block;padding:14px;background:#FEE2E2;border-radius:10px;text-align:center;text-decoration:none;">
+                            <i class="fas fa-times-circle" style="font-size:24px;color:#E74C3C;display:block;margin-bottom:6px;"></i>
+                            <div style="font-size:13px;font-weight:700;color:#991B1B;">Rejected Requests</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a href="{{ url_for('reports.bg_export') }}"
+                           style="display:block;padding:14px;background:#EBF2FF;border-radius:10px;text-align:center;text-decoration:none;">
+                            <i class="fas fa-file-excel" style="font-size:24px;color:#1E3A5F;display:block;margin-bottom:6px;"></i>
+                            <div style="font-size:13px;font-weight:700;color:#1E3A5F;">All Requests</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

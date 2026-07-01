@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Request #{{ req.id }} - BG Management{% endblock %}
+{% block page_title %}BG Request <span>#{{ req.id }}</span>{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-8">
+
+        <!-- Status Banner -->
+        <div style="background:{% if req.status == 'Approved' %}#D1FAE5{% elif req.status == 'Rejected' %}#FEE2E2{% else %}#FFF3CD{% endif %};
+                    border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+            <i class="fas fa-{% if req.status == 'Approved' %}check-circle{% elif req.status == 'Rejected' %}times-circle{% else %}clock{% endif %}"
+               style="font-size:22px;color:{% if req.status == 'Approved' %}#065F46{% elif req.status == 'Rejected' %}#991B1B{% else %}#856404{% endif %};"></i>
+            <div>
+                <div style="font-weight:700;font-size:15px;color:{% if req.status == 'Approved' %}#065F46{% elif req.status == 'Rejected' %}#991B1B{% else %}#856404{% endif %};">
+                    Request {{ req.status }}
+                </div>
+                <div style="font-size:12px;opacity:0.8;">
+                    Submitted on {{ req.created_at.strftime('%d %B %Y at %H:%M') }} ·
+                    {{ req.approval_type }} Approval Required
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Info -->
+        <div class="card mb-3">
+            <div class="card-header"><h6><i class="fas fa-user me-2" style="color:#E8A020;"></i>Employee Information</h6></div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-3"><div style="font-size:11px;color:#6B7A8D;">P.No</div><div style="font-weight:600;">{{ req.p_no }}</div></div>
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Employee Name</div><div style="font-weight:600;">{{ req.employee_name }}</div></div>
+                    <div class="col-md-5"><div style="font-size:11px;color:#6B7A8D;">Email</div><div style="font-weight:600;">{{ req.email_id }}</div></div>
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Department</div><div style="font-weight:600;">{{ req.department.name if req.department else '-' }}</div></div>
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Location</div><div style="font-weight:600;">{{ req.location }}</div></div>
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Date of Request</div><div style="font-weight:600;">{{ req.date_of_request.strftime('%d-%m-%Y') }}</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Work Details -->
+        <div class="card mb-3">
+            <div class="card-header"><h6><i class="fas fa-briefcase me-2" style="color:#E8A020;"></i>Work Order Details</h6></div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Work Order No</div><div style="font-weight:600;">{{ req.work_order_no }}</div></div>
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Type of Work</div><div style="font-weight:600;">{{ req.type_of_work }}</div></div>
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Job Value</div><div style="font-weight:700;color:#1E3A5F;">₹{{ '{:,.0f}'.format(req.job_value) }}</div></div>
+                    <div class="col-md-6"><div style="font-size:11px;color:#6B7A8D;">First Owner</div><div style="font-weight:600;">{{ req.first_owner_name }}</div></div>
+                    <div class="col-md-6"><div style="font-size:11px;color:#6B7A8D;">Alternate Owner</div><div style="font-weight:600;">{{ req.alternate_owner or '-' }}</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BG Details -->
+        <div class="card mb-3">
+            <div class="card-header"><h6><i class="fas fa-shield-alt me-2" style="color:#E8A020;"></i>Bank Guarantee Details</h6></div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-6"><div style="font-size:11px;color:#6B7A8D;">Party Name</div><div style="font-weight:600;">{{ req.party_name }}</div></div>
+                    <div class="col-md-6"><div style="font-size:11px;color:#6B7A8D;">Nature of BG</div><div style="font-weight:600;">{{ req.nature_of_bg }}</div></div>
+                    <div class="col-md-4">
+                        <div style="font-size:11px;color:#6B7A8D;">BG Amount</div>
+                        <div style="font-size:20px;font-weight:800;color:#1E3A5F;">₹{{ '{:,.0f}'.format(req.bg_amount) }}</div>
+                    </div>
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Expiry Date</div><div style="font-weight:600;">{{ req.bg_expiry_date.strftime('%d-%m-%Y') }}</div></div>
+                    <div class="col-md-4"><div style="font-size:11px;color:#6B7A8D;">Claim Period</div><div style="font-weight:600;">{{ req.bg_claim_period }} Days</div></div>
+                    {% if req.remarks %}
+                    <div class="col-12"><div style="font-size:11px;color:#6B7A8D;">Remarks</div><div style="font-weight:500;background:#F7FAFC;padding:10px;border-radius:6px;">{{ req.remarks }}</div></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Attachments -->
+        {% if req.attachments %}
+        <div class="card mb-3">
+            <div class="card-header"><h6><i class="fas fa-paperclip me-2" style="color:#E8A020;"></i>Attachments</h6></div>
+            <div class="card-body">
+                <div class="row g-2">
+                    {% for att in req.attachments %}
+                    <div class="col-md-6">
+                        <a href="{{ url_for('bg_request.uploaded_file', filename=att.file_path) }}" target="_blank"
+                           style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #E2E8F0;border-radius:8px;text-decoration:none;color:#1A2332;transition:all 0.2s;"
+                           onmouseover="this.style.background='#F7FAFC'" onmouseout="this.style.background='transparent'">
+                            <i class="fas fa-file-pdf" style="color:#E74C3C;font-size:20px;"></i>
+                            <div>
+                                <div style="font-size:13px;font-weight:600;">{{ att.file_name }}</div>
+                                <div style="font-size:11px;color:#6B7A8D;">{{ att.file_type.replace('_', ' ').title() }}</div>
+                            </div>
+                            <i class="fas fa-external-link-alt" style="margin-left:auto;color:#6B7A8D;font-size:12px;"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+
+        <!-- Approval History -->
+        <div class="card mb-3">
+            <div class="card-header"><h6><i class="fas fa-history me-2" style="color:#E8A020;"></i>Approval History</h6></div>
+            <div class="card-body p-0">
+                {% if req.approvals %}
+                    {% for appr in req.approvals %}
+                    <div style="padding:14px 16px;border-bottom:1px solid #EDF2F7;">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                            <div>
+                                <span class="badge-status {% if appr.decision == 'Approved' %}badge-approved{% else %}badge-rejected{% endif %}">
+                                    {{ appr.decision }}
+                                </span>
+                                <div style="font-size:12px;color:#6B7A8D;margin-top:4px;">by {{ appr.hod.name }}</div>
+                                <div style="font-size:11px;color:#9CA3AF;">{{ appr.approved_date.strftime('%d %b %Y, %H:%M') }}</div>
+                            </div>
+                        </div>
+                        {% if appr.remarks %}
+                        <div style="margin-top:8px;font-size:12px;background:#F7FAFC;padding:8px;border-radius:6px;color:#4A5568;">
+                            "{{ appr.remarks }}"
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div style="padding:24px;text-align:center;color:#6B7A8D;font-size:13px;">
+                    <i class="fas fa-hourglass-half" style="font-size:24px;margin-bottom:8px;opacity:0.4;display:block;"></i>
+                    Awaiting review
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- HOD Approve/Reject Form -->
+        {% if current_user.role in ['HOD', 'Admin'] and req.status == 'Pending' %}
+        <div class="card">
+            <div class="card-header"><h6><i class="fas fa-gavel me-2" style="color:#1E3A5F;"></i>Take Decision</h6></div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('approval.approve_request', req_id=req.id) }}">
+                    <div class="mb-3">
+                        <label class="form-label">Remarks</label>
+                        <textarea name="remarks" class="form-control" rows="3" placeholder="Add your comments..."></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="decision" value="Approved" class="btn-accent flex-fill" style="padding:10px;">
+                            <i class="fas fa-check me-1"></i> Approve
+                        </button>
+                        <button type="submit" name="decision" value="Rejected" 
+                                style="flex:1;background:#E74C3C;color:#fff;border:none;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;">
+                            <i class="fas fa-times me-1"></i> Reject
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="margin-top:12px;">
+            <a href="{{ url_for('bg_request.my_requests') }}" style="color:#6B7A8D;text-decoration:none;font-size:13px;">
+                <i class="fas fa-arrow-left me-1"></i> Back to My Requests
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

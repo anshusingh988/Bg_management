@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Sign Up - BG Management System{% endblock %}
+
+{% block auth_content %}
+<div style="min-height:100vh;background:linear-gradient(135deg,#1E3A5F 0%,#2C5282 50%,#1E3A5F 100%);display:flex;align-items:center;justify-content:center;padding:30px 20px;">
+    <div style="width:100%;max-width:560px;">
+        <div style="text-align:center;margin-bottom:24px;">
+            <div style="width:56px;height:56px;background:#E8A020;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                <i class="fas fa-shield-alt" style="font-size:24px;color:#1E3A5F;"></i>
+            </div>
+            <h2 style="color:#fff;font-size:20px;font-weight:800;margin:0;">BG Management System</h2>
+        </div>
+
+        <div style="background:#fff;border-radius:18px;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <h4 style="font-weight:800;color:#1E3A5F;margin-bottom:4px;">Create Account</h4>
+            <p style="color:#6B7A8D;font-size:13px;margin-bottom:24px;">Register to access the BG portal</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} mb-3" style="font-size:13px;">{{ msg }}</div>
+                {% endfor %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.signup') }}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">P.No <span class="required-star">*</span></label>
+                        <input type="text" name="p_no" class="form-control" placeholder="e.g. EMP12345" required value="{{ request.form.p_no or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name <span class="required-star">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="Your full name" required value="{{ request.form.name or '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Email Address <span class="required-star">*</span></label>
+                        <input type="email" name="email" class="form-control" placeholder="your@email.com" required value="{{ request.form.email or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Department <span class="required-star">*</span></label>
+                        <select name="department_id" class="form-select" required>
+                            <option value="">Select Department</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if request.form.department_id == dept.id|string %}selected{% endif %}>{{ dept.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Role <span class="required-star">*</span></label>
+                        <select name="role" class="form-select" required>
+                            <option value="Employee">Employee</option>
+                            <option value="HOD">HOD</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Password <span class="required-star">*</span></label>
+                        <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required minlength="6">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Confirm Password <span class="required-star">*</span></label>
+                        <input type="password" name="confirm_password" class="form-control" placeholder="Repeat password" required minlength="6">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary-custom mt-4" style="width:100%;padding:12px;">
+                    <i class="fas fa-user-plus me-2"></i> Create Account
+                </button>
+            </form>
+
+            <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid #EDF2F7;">
+                <p style="font-size:13px;color:#6B7A8D;">Already have an account?
+                    <a href="{{ url_for('auth.login') }}" style="color:#1E3A5F;font-weight:700;text-decoration:none;">Sign In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

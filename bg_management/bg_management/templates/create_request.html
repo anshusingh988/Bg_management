@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}Create BG Request{% endblock %}
+{% block page_title %}Create BG Request{% endblock %}
+
+{% block content %}
+<form method="POST" enctype="multipart/form-data" id="bgForm">
+
+<!-- Section 1: Employee Info -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6><i class="fas fa-user-circle me-2" style="color:#E8A020;"></i>Section 1: Employee Information</h6>
+    </div>
+    <div class="card-body">
+        <div class="form-section-title">Basic Details</div>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">1. P.No <span class="required-star">*</span></label>
+                <input type="text" name="p_no" class="form-control" required value="{{ user.p_no }}" placeholder="e.g. EMP12345">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">2. Employee Name <span class="required-star">*</span></label>
+                <input type="text" name="employee_name" class="form-control" required value="{{ user.name }}" placeholder="Full name">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">3. Email ID <span class="required-star">*</span></label>
+                <input type="email" name="email_id" class="form-control" required value="{{ user.email }}" placeholder="email@company.com">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">4. Department <span class="required-star">*</span></label>
+                <select name="department_id" class="form-select" required>
+                    <option value="">Select Department</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if dept.id == user.department_id %}selected{% endif %}>{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">5. Location <span class="required-star">*</span></label>
+                <input type="text" name="location" class="form-control" required 
+                       value="{{ user.department.location if user.department else '' }}" placeholder="e.g. Jamshedpur">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">6. Date of Request <span class="required-star">*</span></label>
+                <input type="date" name="date_of_request" class="form-control" required value="{{ today }}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: Work Details -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6><i class="fas fa-briefcase me-2" style="color:#E8A020;"></i>Section 2: Work Order Details</h6>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">7. Work Order No <span class="required-star">*</span></label>
+                <input type="text" name="work_order_no" class="form-control" required placeholder="e.g. WO/2026/001">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">8. Type of Work <span class="required-star">*</span></label>
+                <select name="type_of_work" class="form-select" required>
+                    <option value="">Select Type</option>
+                    <option>Civil Construction</option>
+                    <option>Mechanical Works</option>
+                    <option>Electrical Installation</option>
+                    <option>Procurement/Supply</option>
+                    <option>IT Services</option>
+                    <option>Annual Maintenance Contract</option>
+                    <option>Consultancy Services</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">9. Job Value (₹) <span class="required-star">*</span></label>
+                <input type="number" name="job_value" class="form-control" required placeholder="e.g. 5000000" min="0" step="0.01">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">10. First Owner Name <span class="required-star">*</span></label>
+                <input type="text" name="first_owner_name" class="form-control" required placeholder="Primary contact person">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">11. Alternate Owner <span style="color:#6B7A8D;font-size:11px;">(optional)</span></label>
+                <input type="text" name="alternate_owner" class="form-control" placeholder="Backup contact person">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 3: BG Details -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6><i class="fas fa-shield-alt me-2" style="color:#E8A020;"></i>Section 3: Bank Guarantee Details</h6>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">12. Party Name <span class="required-star">*</span></label>
+                <input type="text" name="party_name" class="form-control" required placeholder="Name of the beneficiary party">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">13. Nature of BG <span class="required-star">*</span></label>
+                <select name="nature_of_bg" class="form-select" required>
+                    <option value="">Select Nature</option>
+                    <option>Performance Guarantee</option>
+                    <option>Bid Security / EMD</option>
+                    <option>Advance Payment Guarantee</option>
+                    <option>Retention Money Guarantee</option>
+                    <option>Security Deposit</option>
+                    <option>Warranty Guarantee</option>
+                    <option>Payment Guarantee</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">14. BG Amount (₹) <span class="required-star">*</span></label>
+                <input type="number" name="bg_amount" id="bgAmount" class="form-control" required 
+                       placeholder="e.g. 1500000" min="1" step="0.01" oninput="checkApprovalType()">
+                <div id="approvalTypeInfo" style="font-size:11px;margin-top:5px;"></div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">15. BG Expiry Date <span class="required-star">*</span></label>
+                <input type="date" name="bg_expiry_date" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">16. BG Claim Period (Days) <span class="required-star">*</span></label>
+                <input type="number" name="bg_claim_period" class="form-control" required placeholder="e.g. 30" min="1">
+            </div>
+            <div class="col-12">
+                <label class="form-label">17. Remarks <span style="color:#6B7A8D;font-size:11px;">(optional)</span></label>
+                <textarea name="remarks" class="form-control" rows="3" placeholder="Any additional comments or special instructions..."></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 4: Attachments -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6><i class="fas fa-paperclip me-2" style="color:#E8A020;"></i>Section 4: Document Attachments (Field 19)</h6>
+    </div>
+    <div class="card-body">
+        <div style="background:#FFF3CD;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#856404;">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Note:</strong> Upload required documents. Accepted formats: PDF, JPG, PNG, DOC, DOCX (max 16MB each)
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label">BG Draft Document <span class="required-star">*</span></label>
+                <div class="upload-zone" onclick="document.getElementById('bg_draft').click()">
+                    <i class="fas fa-file-pdf"></i>
+                    <p>Click to upload BG Draft</p>
+                    <p style="font-size:11px;" id="bg_draft_name">PDF, DOC, PNG accepted</p>
+                </div>
+                <input type="file" id="bg_draft" name="bg_draft" style="display:none" accept=".pdf,.doc,.docx,.jpg,.png"
+                       onchange="showFileName(this, 'bg_draft_name')">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">MD Approval Document</label>
+                <div class="upload-zone" onclick="document.getElementById('md_approval').click()">
+                    <i class="fas fa-file-signature"></i>
+                    <p>Click to upload MD Approval</p>
+                    <p style="font-size:11px;" id="md_approval_name">Required for amounts ≤ ₹15 Lakhs</p>
+                </div>
+                <input type="file" id="md_approval" name="md_approval" style="display:none" accept=".pdf,.doc,.docx,.jpg,.png"
+                       onchange="showFileName(this, 'md_approval_name')">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Board Approval Document</label>
+                <div class="upload-zone" onclick="document.getElementById('board_approval').click()">
+                    <i class="fas fa-building"></i>
+                    <p>Click to upload Board Approval</p>
+                    <p style="font-size:11px;" id="board_approval_name">Required for amounts &gt; ₹15 Lakhs</p>
+                </div>
+                <input type="file" id="board_approval" name="board_approval" style="display:none" accept=".pdf,.doc,.docx,.jpg,.png"
+                       onchange="showFileName(this, 'board_approval_name')">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Additional Document 1</label>
+                <div class="upload-zone" onclick="document.getElementById('attachment_4').click()">
+                    <i class="fas fa-file-upload"></i>
+                    <p style="font-size:12px;" id="attachment_4_name">Optional</p>
+                </div>
+                <input type="file" id="attachment_4" name="attachment_4" style="display:none" 
+                       onchange="showFileName(this, 'attachment_4_name')">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Additional Document 2</label>
+                <div class="upload-zone" onclick="document.getElementById('attachment_5').click()">
+                    <i class="fas fa-file-upload"></i>
+                    <p style="font-size:12px;" id="attachment_5_name">Optional</p>
+                </div>
+                <input type="file" id="attachment_5" name="attachment_5" style="display:none"
+                       onchange="showFileName(this, 'attachment_5_name')">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit -->
+<div class="d-flex justify-content-between align-items-center">
+    <a href="{{ url_for('dashboard.index') }}" style="color:#6B7A8D;text-decoration:none;font-size:14px;">
+        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+    </a>
+    <div class="d-flex gap-2">
+        <button type="reset" class="btn-topbar" style="padding:10px 20px;">Clear Form</button>
+        <button type="submit" class="btn-primary-custom" style="padding:10px 28px;">
+            <i class="fas fa-paper-plane me-2"></i> Submit BG Request
+        </button>
+    </div>
+</div>
+
+</form>
+
+<script>
+function showFileName(input, displayId) {
+    const el = document.getElementById(displayId);
+    if (input.files.length > 0) {
+        el.textContent = '✅ ' + input.files[0].name;
+        el.style.color = '#27AE60';
+        el.style.fontWeight = '600';
+        input.closest('.upload-zone').style.borderColor = '#27AE60';
+        input.closest('.upload-zone').style.background = 'rgba(39,174,96,0.05)';
+    }
+}
+
+function checkApprovalType() {
+    const amount = parseFloat(document.getElementById('bgAmount').value);
+    const info = document.getElementById('approvalTypeInfo');
+    if (!isNaN(amount)) {
+        if (amount <= 1500000) {
+            info.innerHTML = '<span style="color:#27AE60;font-weight:600;"><i class="fas fa-check-circle me-1"></i>MD Approval Required</span>';
+        } else {
+            info.innerHTML = '<span style="color:#E74C3C;font-weight:600;"><i class="fas fa-exclamation-circle me-1"></i>Board Approval Required (> ₹15 Lakhs)</span>';
+        }
+    }
+}
+
+// Drag and drop support
+document.querySelectorAll('.upload-zone').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#1E3A5F'; });
+    zone.addEventListener('dragleave', () => { zone.style.borderColor = '#CBD5E0'; });
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.style.borderColor = '#CBD5E0';
+        const input = zone.nextElementSibling;
+        if (input && e.dataTransfer.files.length) {
+            input.files = e.dataTransfer.files;
+            input.dispatchEvent(new Event('change'));
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - BG Management{% endblock %}
+{% block page_title %}Dashboard <span style="font-weight:400;font-size:14px;color:#6B7A8D;">/ Overview</span>{% endblock %}
+
+{% block content %}
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="stat-card">
+            <div class="stat-icon navy"><i class="fas fa-file-alt"></i></div>
+            <div>
+                <div class="stat-value">{{ my_requests|length }}</div>
+                <div class="stat-label">My Total Requests</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card">
+            <div class="stat-icon accent"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="stat-value" style="color:#E8A020;">{{ my_pending }}</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="stat-value" style="color:#27AE60;">{{ my_approved }}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
+            <div>
+                <div class="stat-value" style="color:#E74C3C;">{{ my_rejected }}</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Recent Requests -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6><i class="fas fa-list-alt me-2" style="color:#E8A020;"></i>My Recent BG Requests</h6>
+                <a href="{{ url_for('bg_request.my_requests') }}" style="font-size:12px;color:#1E3A5F;font-weight:600;text-decoration:none;">View All →</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_requests %}
+                <table class="table-custom w-100">
+                    <thead>
+                        <tr>
+                            <th>Request #</th>
+                            <th>Party Name</th>
+                            <th>BG Amount</th>
+                            <th>Expiry</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in recent_requests %}
+                        <tr>
+                            <td><strong>#{{ req.id }}</strong></td>
+                            <td>{{ req.party_name }}</td>
+                            <td style="font-weight:600;">
+                                ₹{{ '{:,.0f}'.format(req.bg_amount) }}
+                                <span style="font-size:10px;color:#6B7A8D;background:#F0F4F8;padding:2px 6px;border-radius:4px;margin-left:4px;">{{ req.approval_type }}</span>
+                            </td>
+                            <td>{{ req.bg_expiry_date.strftime('%d-%m-%Y') if req.bg_expiry_date else '-' }}</td>
+                            <td>
+                                <span class="badge-status 
+                                    {% if req.status == 'Pending' %}badge-pending
+                                    {% elif req.status == 'Approved' %}badge-approved
+                                    {% elif req.status == 'Rejected' %}badge-rejected
+                                    {% else %}badge-review{% endif %}">
+                                    {{ req.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('bg_request.view_request', req_id=req.id) }}" 
+                                   style="font-size:12px;color:#1E3A5F;font-weight:600;text-decoration:none;">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div style="text-align:center;padding:50px;color:#6B7A8D;">
+                    <i class="fas fa-inbox" style="font-size:40px;margin-bottom:12px;opacity:0.4;"></i>
+                    <p style="font-size:14px;">No requests yet.</p>
+                    <a href="{{ url_for('bg_request.create') }}" class="btn-accent" style="display:inline-block;margin-top:8px;text-decoration:none;">Create First Request</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar panels -->
+    <div class="col-lg-4">
+        <!-- HOD Pending -->
+        {% if current_user.role in ['HOD', 'Admin'] and pending_approvals %}
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between">
+                <h6><i class="fas fa-exclamation-circle me-2" style="color:#E74C3C;"></i>Pending Approvals</h6>
+                <span style="background:#FEE2E2;color:#991B1B;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;">{{ pending_approvals|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% for req in pending_approvals[:5] %}
+                <div style="padding:12px 16px;border-bottom:1px solid #EDF2F7;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-size:13px;font-weight:600;">#{{ req.id }} - {{ req.party_name }}</div>
+                        <div style="font-size:11px;color:#6B7A8D;">₹{{ '{:,.0f}'.format(req.bg_amount) }} · {{ req.approval_type }}</div>
+                    </div>
+                    <a href="{{ url_for('approval.approvals_list') }}" style="font-size:11px;color:#1E3A5F;font-weight:700;text-decoration:none;">Review</a>
+                </div>
+                {% endfor %}
+                {% if pending_approvals|length > 5 %}
+                <div style="padding:10px;text-align:center;">
+                    <a href="{{ url_for('approval.approvals_list') }}" style="font-size:12px;color:#1E3A5F;font-weight:700;text-decoration:none;">View all {{ pending_approvals|length }} pending →</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="card mb-3">
+            <div class="card-header"><h6><i class="fas fa-bolt me-2" style="color:#E8A020;"></i>Quick Actions</h6></div>
+            <div class="card-body">
+                <a href="{{ url_for('bg_request.create') }}" class="btn-primary-custom d-block text-center text-decoration-none mb-2" style="padding:10px;">
+                    <i class="fas fa-plus-circle me-2"></i> New BG Request
+                </a>
+                <a href="{{ url_for('reports.bg_export') }}" class="btn-accent d-block text-center text-decoration-none" style="padding:10px;">
+                    <i class="fas fa-file-excel me-2"></i> Export BG Report
+                </a>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="card">
+            <div class="card-header"><h6><i class="fas fa-history me-2" style="color:#1E3A5F;"></i>Recent Activity</h6></div>
+            <div class="card-body p-0">
+                {% for log in recent_activity %}
+                <div style="padding:10px 16px;border-bottom:1px solid #F0F4F8;display:flex;gap:10px;align-items:flex-start;">
+                    <div style="width:28px;height:28px;background:#EBF2FF;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fas fa-circle-dot" style="font-size:9px;color:#1E3A5F;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#1A2332;">{{ log.action }}</div>
+                        <div style="font-size:11px;color:#6B7A8D;">{{ log.timestamp.strftime('%d %b, %H:%M') if log.timestamp else '' }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="padding:20px;text-align:center;color:#6B7A8D;font-size:13px;">No activity yet</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

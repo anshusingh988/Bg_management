@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}My Requests{% endblock %}
+{% block page_title %}My BG Requests{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6><i class="fas fa-list-alt me-2" style="color:#E8A020;"></i>All My BG Requests</h6>
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <!-- Status filter -->
+            <div class="d-flex gap-1">
+                {% for s in ['', 'Pending', 'Under Review', 'Approved', 'Rejected'] %}
+                <a href="{{ url_for('bg_request.my_requests', status=s) }}"
+                   style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;
+                          {% if status_filter == s %}background:#1E3A5F;color:#fff;{% else %}background:#EDF2F7;color:#4A5568;{% endif %}">
+                    {{ s if s else 'All' }}
+                </a>
+                {% endfor %}
+            </div>
+            <a href="{{ url_for('bg_request.create') }}" class="btn-accent" style="text-decoration:none;padding:7px 16px;border-radius:8px;">
+                <i class="fas fa-plus me-1"></i> New Request
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if requests %}
+        <div style="overflow-x:auto;">
+        <table class="table-custom w-100">
+            <thead>
+                <tr>
+                    <th>Req #</th>
+                    <th>Date</th>
+                    <th>Work Order</th>
+                    <th>Party Name</th>
+                    <th>Nature of BG</th>
+                    <th>BG Amount</th>
+                    <th>Expiry Date</th>
+                    <th>Approval</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td><strong style="color:#1E3A5F;">#{{ req.id }}</strong></td>
+                    <td style="white-space:nowrap;">{{ req.date_of_request.strftime('%d-%m-%Y') }}</td>
+                    <td>{{ req.work_order_no }}</td>
+                    <td><strong>{{ req.party_name }}</strong></td>
+                    <td style="font-size:12px;">{{ req.nature_of_bg }}</td>
+                    <td>
+                        <strong>₹{{ '{:,.0f}'.format(req.bg_amount) }}</strong>
+                    </td>
+                    <td style="white-space:nowrap;">{{ req.bg_expiry_date.strftime('%d-%m-%Y') }}</td>
+                    <td>
+                        <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600;
+                                     {% if req.approval_type == 'MD' %}background:#DBEAFE;color:#1E40AF;{% else %}background:#FEE2E2;color:#991B1B;{% endif %}">
+                            {{ req.approval_type }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge-status 
+                            {% if req.status == 'Pending' %}badge-pending
+                            {% elif req.status == 'Approved' %}badge-approved
+                            {% elif req.status == 'Rejected' %}badge-rejected
+                            {% else %}badge-review{% endif %}">
+                            {{ req.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('bg_request.view_request', req_id=req.id) }}"
+                           style="color:#1E3A5F;font-weight:700;font-size:12px;text-decoration:none;">
+                            <i class="fas fa-eye me-1"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div style="padding:14px 16px;font-size:12px;color:#6B7A8D;border-top:1px solid #EDF2F7;">
+            Showing {{ requests|length }} request(s)
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:60px;color:#6B7A8D;">
+            <i class="fas fa-inbox" style="font-size:50px;margin-bottom:16px;opacity:0.3;"></i>
+            <p style="font-size:15px;font-weight:600;margin-bottom:4px;">No requests found</p>
+            <p style="font-size:13px;">{% if status_filter %}No {{ status_filter }} requests.{% else %}Create your first BG request.{% endif %}</p>
+            <a href="{{ url_for('bg_request.create') }}" class="btn-primary-custom mt-3" style="display:inline-block;text-decoration:none;padding:10px 24px;">
+                <i class="fas fa-plus-circle me-2"></i> Create BG Request
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

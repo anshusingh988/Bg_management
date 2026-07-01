@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Login - BG Management System{% endblock %}
+
+{% block auth_content %}
+<div style="min-height:100vh;background:linear-gradient(135deg,#1E3A5F 0%,#2C5282 50%,#1E3A5F 100%);display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div style="width:100%;max-width:440px;">
+
+        <!-- Logo -->
+        <div style="text-align:center;margin-bottom:32px;">
+            <div style="width:64px;height:64px;background:#E8A020;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                <i class="fas fa-shield-alt" style="font-size:28px;color:#1E3A5F;"></i>
+            </div>
+            <h2 style="color:#fff;font-size:22px;font-weight:800;margin:0;">BG Management System</h2>
+            <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-top:4px;">Bank Guarantee Tracking Portal</p>
+        </div>
+
+        <!-- Card -->
+        <div style="background:#fff;border-radius:18px;padding:36px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <h4 style="font-weight:800;color:#1E3A5F;margin-bottom:6px;">Welcome Back</h4>
+            <p style="color:#6B7A8D;font-size:13px;margin-bottom:24px;">Sign in to your account</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} mb-3" style="font-size:13px;">{{ msg }}</div>
+                {% endfor %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <div style="position:relative;">
+                        <i class="fas fa-envelope" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#6B7A8D;font-size:14px;"></i>
+                        <input type="email" name="email" class="form-control" placeholder="your@email.com" required
+                               style="padding-left:38px;" value="{{ request.form.email or '' }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <div style="position:relative;">
+                        <i class="fas fa-lock" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#6B7A8D;font-size:14px;"></i>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••" required style="padding-left:38px;" id="pwdField">
+                        <button type="button" onclick="togglePwd()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#6B7A8D;cursor:pointer;">
+                            <i class="fas fa-eye" id="pwdIcon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-4" style="display:flex;align-items:center;justify-content:space-between;">
+                    <label style="display:flex;align-items:center;gap:7px;font-size:13px;color:#6B7A8D;cursor:pointer;">
+                        <input type="checkbox" name="remember"> Remember me
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary-custom w-100" style="width:100%;padding:12px;">
+                    <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                </button>
+            </form>
+
+            <div style="text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid #EDF2F7;">
+                <p style="font-size:13px;color:#6B7A8D;">Don't have an account? 
+                    <a href="{{ url_for('auth.signup') }}" style="color:#1E3A5F;font-weight:700;text-decoration:none;">Sign Up</a>
+                </p>
+            </div>
+
+            <!-- Demo credentials -->
+            <div style="background:#F0F4F8;border-radius:10px;padding:14px;margin-top:16px;">
+                <p style="font-size:11px;font-weight:700;color:#1E3A5F;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Demo Credentials</p>
+                <div style="font-size:12px;color:#4A5568;line-height:1.8;">
+                    <div><strong>Admin:</strong> admin@bgms.com / admin123</div>
+                    <div><strong>HOD:</strong> hod@bgms.com / hod123</div>
+                    <div><strong>Employee:</strong> employee@bgms.com / emp123</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function togglePwd() {
+    const f = document.getElementById('pwdField');
+    const i = document.getElementById('pwdIcon');
+    if (f.type === 'password') { f.type = 'text'; i.className = 'fas fa-eye-slash'; }
+    else { f.type = 'password'; i.className = 'fas fa-eye'; }
+}
+</script>
+{% endblock %}

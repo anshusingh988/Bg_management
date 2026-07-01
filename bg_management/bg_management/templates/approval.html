@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Approvals - BG Management{% endblock %}
+{% block page_title %}HOD Approval Queue{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6><i class="fas fa-check-circle me-2" style="color:#E8A020;"></i>BG Requests for Review</h6>
+        <div class="d-flex gap-1">
+            {% for s in ['Pending', 'Approved', 'Rejected', ''] %}
+            <a href="{{ url_for('approval.approvals_list', status=s) }}"
+               style="padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;
+                      {% if status_filter == s %}background:#1E3A5F;color:#fff;{% else %}background:#EDF2F7;color:#4A5568;{% endif %}">
+                {{ s if s else 'All' }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if requests %}
+        <div style="overflow-x:auto;">
+        <table class="table-custom w-100">
+            <thead>
+                <tr>
+                    <th>Req #</th>
+                    <th>Date</th>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Party Name</th>
+                    <th>BG Amount</th>
+                    <th>Approval Type</th>
+                    <th>Expiry</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td><strong style="color:#1E3A5F;">#{{ req.id }}</strong></td>
+                    <td style="white-space:nowrap;font-size:12px;">{{ req.date_of_request.strftime('%d-%m-%Y') }}</td>
+                    <td>
+                        <div style="font-weight:600;font-size:13px;">{{ req.employee_name }}</div>
+                        <div style="font-size:11px;color:#6B7A8D;">{{ req.p_no }}</div>
+                    </td>
+                    <td style="font-size:12px;">{{ req.department.name if req.department else '-' }}</td>
+                    <td style="font-weight:600;">{{ req.party_name }}</td>
+                    <td>
+                        <div style="font-weight:800;color:#1E3A5F;">₹{{ '{:,.0f}'.format(req.bg_amount) }}</div>
+                        <div style="font-size:10px;color:#6B7A8D;">Job: ₹{{ '{:,.0f}'.format(req.job_value) }}</div>
+                    </td>
+                    <td>
+                        <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:700;
+                                     {% if req.approval_type == 'MD' %}background:#DBEAFE;color:#1E40AF;{% else %}background:#FEE2E2;color:#991B1B;{% endif %}">
+                            {{ req.approval_type }}
+                        </span>
+                    </td>
+                    <td style="font-size:12px;white-space:nowrap;">{{ req.bg_expiry_date.strftime('%d-%m-%Y') }}</td>
+                    <td>
+                        <span class="badge-status 
+                            {% if req.status == 'Pending' %}badge-pending
+                            {% elif req.status == 'Approved' %}badge-approved
+                            {% elif req.status == 'Rejected' %}badge-rejected
+                            {% else %}badge-review{% endif %}">
+                            {{ req.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="{{ url_for('bg_request.view_request', req_id=req.id) }}" 
+                               style="padding:5px 10px;background:#EBF2FF;color:#1E3A5F;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if req.status == 'Pending' %}
+                            <button onclick="openApprovalModal({{ req.id }}, '{{ req.party_name }}', '{{ '{:,.0f}'.format(req.bg_amount) }}')"
+                                    style="padding:5px 10px;background:#D1FAE5;color:#065F46;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
+                                <i class="fas fa-gavel"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <div style="padding:12px 16px;font-size:12px;color:#6B7A8D;border-top:1px solid #EDF2F7;">
+            {{ requests|length }} request(s) found
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:60px;color:#6B7A8D;">
+            <i class="fas fa-check-double" style="font-size:50px;margin-bottom:16px;opacity:0.3;"></i>
+            <p style="font-size:15px;font-weight:600;">No requests found</p>
+            <p style="font-size:13px;">All clear — no {{ status_filter }} requests at the moment</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Approval Modal -->
+<div id="approvalModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:90%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <h5 style="font-weight:800;color:#1E3A5F;margin-bottom:4px;">Review BG Request</h5>
+        <p id="modalSubtitle" style="color:#6B7A8D;font-size:13px;margin-bottom:20px;"></p>
+        
+        <form method="POST" id="approvalForm">
+            <div class="mb-3">
+                <label class="form-label">Remarks / Comments</label>
+                <textarea name="remarks" class="form-control" rows="4" placeholder="Add your decision remarks (optional)..."></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" name="decision" value="Approved" class="btn-accent flex-fill" style="padding:12px;">
+                    <i class="fas fa-check-circle me-2"></i> Approve
+                </button>
+                <button type="submit" name="decision" value="Rejected"
+                        style="flex:1;background:#E74C3C;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">
+                    <i class="fas fa-times-circle me-2"></i> Reject
+                </button>
+            </div>
+            <button type="button" onclick="closeModal()" 
+                    style="width:100%;margin-top:10px;background:none;border:1px solid #E2E8F0;padding:9px;border-radius:8px;cursor:pointer;font-size:13px;color:#6B7A8D;">
+                Cancel
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openApprovalModal(reqId, partyName, amount) {
+    document.getElementById('approvalForm').action = `/approve/${reqId}`;
+    document.getElementById('modalSubtitle').textContent = `Party: ${partyName} · BG Amount: ₹${amount}`;
+    document.getElementById('approvalModal').style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('approvalModal').style.display = 'none';
+}
+document.getElementById('approvalModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+</script>
+{% endblock %}
