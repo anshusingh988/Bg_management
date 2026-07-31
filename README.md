@@ -16,11 +16,9 @@ A Flask-based Bank Guarantee (BG) Management System with HOD Approval workflow.
 - Deployment: Render.com (Gunicorn)
 
 ## Default Credentials (for testing)
-| Role     | Email               | Password |
-|----------|---------------------|----------|
-| Admin    | admin@bgms.com      | admin123 |
-| HOD      | hod@bgms.com        | hod123   |
-| Employee | employee@bgms.com   | emp123   |
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | (contact for demo access) | - |
 
 ## Setup (Local)
 ```bash
